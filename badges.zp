@@ -11,18 +11,20 @@
 
 (define template-string (read-contents (zepto:find-on-path "badges/template.svg")))
 
-(defkeywords (template service status) (:color :default "090"
+(defkeywords (template service status) (:color :default "0a0"
                                         :width :default "100"
-                                        :height :default "30")
-      (mustache:template template-string
-                         (make-hash "service" service
-                                    "status"  status
-                                    "color"   color
-                                    "half-width" (->string (/ (string->number width) 2))
-                                    "three-quarter-width" (->string (* 3 (/ (string->number width) 4)))
-                                    "quarter-width" (->string (/ (string->number width) 4))
-                                    "width"   width
-                                    "height"  height)))
+                                        :height :default "20")
+  (let ((w (max (string->number width)
+                (+ (* 8 (length status)) (* 8 (length service))))))
+    (mustache:template template-string
+                       (make-hash "service" service
+                                  "status"  status
+                                  "color"   color
+                                  "half-width" (->string (/ w 2))
+                                  "three-quarter-width" (->string (* 3 (/ w 4)))
+                                  "quarter-width" (->string (/ w 4))
+                                  "width"   (->string w)
+                                  "height"  height))))
 
 (define make-badge
   (case-lambda
