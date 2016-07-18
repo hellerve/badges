@@ -1,0 +1,15 @@
+#{:name "badges"
+  :version "0.0.1"
+  :license "GPLv2"
+  :type :library
+  :tests []
+  :author #{:name "Veit Heller"
+            :email "veit@veitheller.de"
+            :github "@hellerve"}
+  :zepto #{:version :any
+           :ez #f
+           :bz #f}
+  :dependencies ("hellerve/lang-server"
+                 "zepto-lang/mustache")
+  :dev-dependencies ()}
+

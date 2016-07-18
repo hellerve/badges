@@ -1,0 +1,62 @@
+#lang serve
+; A simple server that generates Github badges.
+; after starting it, you can access the following routes:
+; /<service-name>/<status-name>
+; /<service-name>/<status-name>/<color-hex>
+; /<service-name>/<status-name>/<color-hex>/<width-pixels>
+; /<service-name>/<status-name>/<color-hex>/<width-pixels>/<height-pixels>
+
+(load "mustache/mustache")
+(import-all "mustache")
+
+(define template-string (read-contents (zepto:find-on-path "badges/template.svg")))
+
+(defkeywords (template service status) (:color :default "090"
+                                        :width :default "100"
+                                        :height :default "30")
+      (mustache:template template-string
+                         (make-hash "service" service
+                                    "status"  status
+                                    "color"   color
+                                    "half-width" (->string (/ (string->number width) 2))
+                                    "three-quarter-width" (->string (* 3 (/ (string->number width) 4)))
+                                    "quarter-width" (->string (/ (string->number width) 4))
+                                    "width"   width
+                                    "height"  height)))
+
+(define make-badge
+  (case-lambda
+    (() (template))
+    ((service status) (template service status))
+    ((service status color) (template service status :color color))
+    ((service status color size)
+      (template service status :color color :width size :height size))
+    ((service status color width height)
+      (template service status :color color :width width :height height))))
+
+; Missing function
+(define (char:hex? char)
+  (let ((num (char->integer char)))
+    (or (char:num? char)
+        (and (> num 96) (< num 103))
+        (and (> num 64) (< num 71)))))
+
+(define (ensure-format args)
+  (and (< 1 (length args))
+       (> 6 (length args))
+       (string:reduce (lambda (acc elem) (and acc (char:hex? elem)))
+                      #t
+                      (get-from args 2 ""))
+       (all? string:num? (list:sublist args 3 (length args)))
+       (or
+        (= 6 (length (get-from args 2 "")))
+        (= 3 (length (get-from args 2 "000"))))))
+
+(define (handle method route headers req)
+  (cond
+    ((not (eq? method "GET")) (response :code 405))
+    (else
+      (let ((split (string:split route "/")))
+        (if (ensure-format split)
+          (response :body (apply make-badge split) :content-type "image/svg+xml")
+          (response :code 404))))))
