@@ -9,7 +9,7 @@
 (load "mustache/mustache")
 (import-all "mustache")
 
-(define template-string (read-contents (zepto:find-on-path "badges/template.svg")))
+(define template-string (read-contents (car (zepto:find-on-path "badges/template.svg"))))
 
 (defkeywords (template service status) (:color :default "0a0"
                                         :width :default "100"
