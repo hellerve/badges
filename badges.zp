@@ -53,4 +53,4 @@
       (let ((split (string:split route "/")))
         (if (ensure-format split)
           (response :body (apply make-badge split) :content-type "image/svg+xml")
-          (response :code 404))))))
+          (response :body "Not Found" :code 404))))))
